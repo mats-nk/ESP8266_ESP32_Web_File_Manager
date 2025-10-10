@@ -7,14 +7,14 @@
 
 // https://github.com/peff74/ESP8266_ESP32_Web_File_Manager
 
-#if defined(ARDUINO_ARCH_ESP32)        // ESP32
+#if defined(ARDUINO_ARCH_ESP32)        // --- ESP32 ---
 #include <WiFi.h>                      // ESP32 WiFi lib
-#include <WebServer.h>
-WebServer server(80);                  // ======= Webserver Initialization
-#elif defined(ESP8266)                 // ESP8266
+#include <WebServer.h>                 // ESP32 Webserver lib
+WebServer server(80);                  // Webserver Initialization
+#elif defined(ESP8266)                 // --- ESP8266 ---
 #include <ESP8266WiFi.h>               // ESP8266 WiFi lib
-#include <ESP8266WebServer.h>
-ESP8266WebServer server(80);           // ======= Webserver Initialization
+#include <ESP8266WebServer.h>          // ESP8266 Webserver lib
+ESP8266WebServer server(80);           // Webserver Initialization
 #endif
 
 #include <LittleFS.h>
