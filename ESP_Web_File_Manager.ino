@@ -1,24 +1,23 @@
-// Created by peff74
-// Forked by mats-nk
-// 
-// 
-// Minimum development environment
+// peff74 Created the ESP8266 and ESP32 code,
+// mats-nk added the combined code, "ESP_Web_File_Manager.ino"
+//
+// Webserver File Manager for ESP32 or ESP8266 that uses LittleFS
+//
+// Minimum development environment:
 // IDE 2.3.4 and esp8266 3.1.2 or esp32 3.1.1
 
-// https://github.com/peff74/ESP8266_ESP32_Web_File_Manager
-
 #if defined(ARDUINO_ARCH_ESP32)        // --- ESP32 ---
+#include <LittleFS.h>                  // LittleFS lib
 #include <WiFi.h>                      // ESP32 WiFi lib
 #include <WebServer.h>                 // ESP32 Webserver lib
 WebServer server(80);                  // Webserver Initialization
 #elif defined(ESP8266)                 // --- ESP8266 ---
-#include <ESP8266WiFi.h>               // ESP8266 WiFi lib
+#include <LittleFS.h>                  // LittleFS lib
 #include <ESP8266WebServer.h>          // ESP8266 Webserver lib
 ESP8266WebServer server(80);           // Webserver Initialization
 #endif
 
-#include <LittleFS.h>
-#include <time.h>
+#include <time.h>                      // time lib work with both plattforms
 
 //=======Defines
 #define WIFI_SSID "Test"
@@ -99,6 +98,29 @@ void fileserverSetup() {
 // ======= Handle file system root directory listing
 void handleFileList() {
   String files;
+
+#if defined (ARDUINO_ARCH_ESP8266)
+  Dir dir = LittleFS.openDir("/");
+
+  // Generate HTML list of files with metadata
+  while (dir.next()) {
+    File file = dir.openFile("r");
+
+    char buffer1[20];
+    size_t sizeofFile = file.size();
+    formatBytes(sizeofFile, buffer1, sizeof(buffer1));
+
+    files += "<div class='file-container'>";
+    files += "<span class='filename'>" + String(file.name()) + "</span>";
+    files += "<span class='file-size'>" + String(buffer1) + "</span>";
+    files += "<span class='file-date'>" + getLastModified(file) + "</span>";
+    files += "<span class='file-actions'>";
+    files += "<a href='/delete?file=/" + String(file.name()) + "'>Delete</a>";
+    files += "<a href='/view?file=" + String(file.name()) + "'>View</a>";
+    files += "</span></div>";
+    file.close();
+  }
+#elif defined(ESP32)
   File root = LittleFS.open("/");
   File file = root.openNextFile();
 
@@ -117,6 +139,7 @@ void handleFileList() {
     files += "</span></div>";
     file = root.openNextFile();
   }
+#endif
 
   // Build complete filesystem management interface
   String html = "<html><head>";
